@@ -17,11 +17,16 @@ k = KrakenAPI(api)
 debug_flag = True #if True now orders are submitted
 
 ## your baseline currency when you're off the market
-wallet_curr = "ZUSD"
+wallet_curr = "USDT"
 ## which market/currency you want to trade
 trade_curr = "XBTC"
 ## the Kraken pair to trade
-pair = "BTCUSD"
+pair = "BTCUSDT"
+
+## In some cases you want to trade with a stable coint (i.e. USDT) but follow the fiat ticker
+ticker_pair = pair
+#ticker_pair = "BTCUSD"
+
 
 ## When set a limit order as a take-profit, how much profit you want to take? (0.01 = 1%)
 expected_uplift_for_limit_order = 0.005
@@ -126,7 +131,7 @@ def main(k=k,wallet_curr=wallet_curr,pair=pair,debug=True,profit_rate=0.005,expi
     enough_usd = float(balance[balance.index == wallet_curr]['vol']) > funds_threshold ## not enough funds or trade in progress?
     if enough_usd: ## we have enough funds
         log_message(f"Enough balance? Yes", COLOR_BLUE)
-        ohlc, last = k.get_ohlc_data(pair,ascending=True) ## retrieve ohlc
+        ohlc, last = k.get_ohlc_data(ticker_pair,ascending=True) ## retrieve ohlc
         ohlc = enrich_ohlv(ohlc) ## add your indexes
         ohlc = enter_rule(ohlc,force_order=False) ## run the enter rule logic
         if ohlc.iloc[-2]['enter_rule']: ## the last row of ohlc contains the current period/minute so we look at the second last
