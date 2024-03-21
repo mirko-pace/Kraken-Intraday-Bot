@@ -85,7 +85,7 @@ def make_order(pair,type,ordertype,wallet=get_wallet(wallet_curr),price=None,pri
               ,timeinforce="GTD",expiretm="+180",validate=True,prec=2):
     if  price == None:
         price = get_typical_price(pair)
-    volume = wallet/price
+    volume = wallet/price if type == 'buy' else wallet
     res = k.add_standard_order(pair=pair,
                          type=type,
                          ordertype=ordertype,
@@ -136,7 +136,7 @@ def main(k=k,wallet_curr=wallet_curr,pair=pair,debug=True,profit_rate=0.005,expi
             log_message(f"Description: {order_det['descr']['order']}",COLOR_END)
             ## Now we prepare the limit order
             buy_price = float(k.query_orders_info(order_det['txid'][0])['price']) ## let's get our buy price/baseline
-            limit_order_det = make_order(pair,"sell","limit",price=buy_price*(1+profit_rate),expiretm=expire_limit,validate=debug)
+            limit_order_det = make_order(pair,"sell","limit",wallet=get_wallet(trade_curr,util_rate=0.999),price=buy_price*(1+profit_rate),expiretm=expire_limit,validate=debug)
             log_message(f"Limit Order is on!!! - ID: {limit_order_det['txid'][0]}",COLOR_AMBER)
             log_message(f"Description: {limit_order_det['descr']['order']}",COLOR_END)            
         else:
