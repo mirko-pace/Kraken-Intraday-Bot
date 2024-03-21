@@ -147,20 +147,24 @@ def main(k=k,wallet_curr=wallet_curr,pair=pair,debug=True,profit_rate=0.005,expi
     else:
         log_message(f"Enough balance? Nope!", COLOR_RED)
         log_message(f"Balance in {wallet_curr}: {float(balance[balance.index == wallet_curr]['vol'])}", COLOR_END)
-        log_message(f"Balance in {trade_curr}: {float(balance[balance.index == trade_curr]['vol'])}", COLOR_END)
+        trade_curr_bal = balance[balance.index == trade_curr]['vol']
+        log_message(f"Balance in {trade_curr}: {0 if trade_curr_bal.shape == (0,) else float(trade_curr_bal)}", COLOR_END)
         open_orders = k.get_open_orders()
         ## if we have at least an oper order (we should actually have only 1...)
         if open_orders.shape[0] > 0:
             my_open = open_orders[open_orders['descr_pair'] == pair]
-            log_message(f"Open orders: {my_open.shape[0]}",COLOR_BLUE)
-            mkt_price = get_typical_price(pair)
-            for index, o_ord in my_open.iterrows():
-                current_timestamp = int(time.time())
-                # Calculate the difference in seconds between timestamp and now
-                expiration_mins = (int(o_ord['expiretm']) - int(time.time()) ) // 60
-                log_message(f"{o_ord['descr_order']} - Expiring in {expiration_mins} minutes",COLOR_END)
-                gap = round((mkt_price/float(o_ord['descr_price'])-1)*100,4)
-                log_message(f"Current typical price: {round(mkt_price,4)} - we're {gap}% away",COLOR_END)
+            if my_open.shape[0] > 0:
+                log_message(f"Open orders: {my_open.shape[0]}",COLOR_BLUE)
+                mkt_price = get_typical_price(pair)
+                for index, o_ord in my_open.iterrows():
+                    current_timestamp = int(time.time())
+                    # Calculate the difference in seconds between timestamp and now
+                    expiration_mins = (int(o_ord['expiretm']) - int(time.time()) ) // 60
+                    log_message(f"{o_ord['descr_order']} - Expiring in {expiration_mins} minutes",COLOR_END)
+                    gap = round((mkt_price/float(o_ord['descr_price'])-1)*100,4)
+                    log_message(f"Current typical price: {round(mkt_price,4)} - we're {gap}% away",COLOR_END)
+            else:
+                log_message(f"We might have open orders in different markets, doing nothing", COLOR_AMBER)
         else:  ## if we don't have open orders the last one expired, so we revert to wallet
             closed_orders = k.get_closed_orders()
             ## let's just take the last few ones
